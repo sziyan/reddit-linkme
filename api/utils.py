@@ -91,7 +91,7 @@ def get_subreddit_type(subreddit):
     elif subreddit in Config.pc:
         result = 'pc'
     else:
-        result = 'testing'
+        pass
     return result
 
 def create_object(subreddit, search):
@@ -109,8 +109,7 @@ def create_object(subreddit, search):
         else:
             return AppStore(url)
     else:
-        url = ios_get_app_link(search)
-        return AppStore.App(url) #for testing purposes, change as required
+        return None
 
 def generate_message(subreddit, app_list, count):
     message = ''
