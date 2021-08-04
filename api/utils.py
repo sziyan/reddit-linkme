@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 import requests
 import jellyfish
 from config import Config
-import api
 import logging
 
 logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a', format='%(asctime)s %(levelname)s - %(message)s', datefmt='%d-%b-%y %I:%M:%S %p')
@@ -24,14 +23,14 @@ def ios_get_app_link(search):
     data = r.text
     soup = BeautifulSoup(data, 'html.parser')
     app = soup.find_all('div', class_="appmain") #obtain all app title on the page
-    for i in app[0:3]: #create a list of apps in result
+    for i in app[0:10]: #create a list of apps in result
         result_list.append(i.find_all('div', class_='apptitle')[0].contents[0].strip().lower())
     if search in result_list: #if able to find the app from 1 of the result
         index = result_list.index(search) #find out the index of the item found
     else:
         try:
-            for i in range(0,3): # loop through the list in case app is not 1st on list
-                app_name = app.find_all('div', class_='apptitle')[0].contents[0].strip()
+            for i in range(0,10): # loop through the list in case app is not 1st on list
+                app_name = app[i].find_all('div', class_='apptitle')[0].contents[0].strip()
                 if search in app_name.lower(): #if first on list, or search query is in the name of 1st of the list exit loop
                     index = i
                     break
@@ -40,7 +39,8 @@ def ios_get_app_link(search):
                     if similarity < similarity_index:
                         similarity_index = similarity
                         index = i
-        except:
+        except Exception as e:
+            logging.error(e)
             pass
     app_main = soup.find_all('div', class_="appmain")[index]
     app_link = app_main.find_all('a')[0].get('href')

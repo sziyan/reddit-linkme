@@ -2,6 +2,9 @@ from bs4 import BeautifulSoup
 import requests
 import json
 import re
+import logging
+
+logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a', format='%(asctime)s %(levelname)s - %(message)s', datefmt='%d-%b-%y %I:%M:%S %p')
 
 class AppStore:
     def __init__(self, url):
@@ -25,6 +28,8 @@ class AppStore:
             return rating
         except IndexError:
             return None
+        except Exception as e:
+            logging.warning('Appstore get_rating: {}'.format(e))
 
     @property
     def get_price(self):
@@ -41,6 +46,8 @@ class AppStore:
             return True
         except IndexError:
             return False
+        except Exception as e:
+            logging.warning('Appstore get_iap: {}'.format(e))
 
     @property
     def get_desc(self):
@@ -50,6 +57,8 @@ class AppStore:
             return desc.get('description')
         except IndexError:
             return None
+        except Exception as e:
+            logging.warning('Appstore get_desc: {}'.format(e))
 
     @property
     def get_subtitle(self):
@@ -58,14 +67,18 @@ class AppStore:
             return subtitle
         except IndexError:
             return None
+        except Exception as e:
+            logging.warning('Appstore get_subtitle: {}'.format(e))
 
     @property
     def get_size(self):
         try:
             size = self._soup.find_all('dd', class_='information-list__item__definition')[1].contents[0]
             return size
-        except:
+        except Exception as e:
+            logging.warning('Appstore get_size: {}'.format(e))
             return 'NA'
+
 
     @property
     def get_name(self):
@@ -75,3 +88,5 @@ class AppStore:
             return result.get('name')
         except IndexError:
             return None
+        except Exception as e:
+            logging.warning('Appstore get_name: {}'.format(e))

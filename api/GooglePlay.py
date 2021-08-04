@@ -2,6 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 import json
 
+import logging
+
+logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a', format='%(asctime)s %(levelname)s - %(message)s', datefmt='%d-%b-%y %I:%M:%S %p')
+
 class GooglePlay:
     def __init__(self, url) :
         self._url = url
@@ -17,7 +21,8 @@ class GooglePlay:
     def get_name(self):
         try:
             return self._soup.find_all('h1', class_='AHFaub')[0].contents[0].text
-        except:
+        except Exception as e:
+            logging.warning('Playstore get_name: {}'.format(e))
             return 'NA'
     
     @property
@@ -35,7 +40,7 @@ class GooglePlay:
                 price = '$' + price
             return price
         except Exception as error:
-            print(error)
+            logging.warning('Playstore get_price: {}'.format(error))
 
     @property
     def get_iap(self):
@@ -44,6 +49,8 @@ class GooglePlay:
             return True
         except IndexError:
             return False
+        except Exception as e:
+            logging.warning('Playstore get_iap: {}'.format(e))
 
     @property
     def get_rating(self):
@@ -51,6 +58,8 @@ class GooglePlay:
             return self._soup.find_all('div', class_="BHMmbe")[0].contents[0]
         except IndexError:
             return None
+        except Exception as e:
+            logging.warning('Playstore get_rating: {}'.format(e))
 
     @property
     def get_playpass(self):
@@ -63,6 +72,8 @@ class GooglePlay:
             return True
         except IndexError:
             return False
+        except Exception as e:
+            logging.warning('Playstore get_playpass: {}'.format(e))
 
     @property
     def get_desc(self):
@@ -73,7 +84,8 @@ class GooglePlay:
         try:
             script = json.loads(self._soup.find_all('script', type='application/ld+json')[0].contents[0])
             return script.get('description')
-        except:
+        except Exception as e:
+            logging.warning('Playstore get_desc: {}'.format(e))
             return 'NA'
 
     @property
@@ -95,8 +107,8 @@ class GooglePlay:
                     return installs[index+2].find_all('span', class_='htlgb')[0].text
                 else:
                     return installs[index*2].find_all('span', class_='htlgb')[0].text
-            except:
-                pass
+            except Exception as e:
+                logging.warning('Playstore get_installs: {}'.format(e))
 
     
     @property
@@ -115,8 +127,8 @@ class GooglePlay:
                     return size
                 else:
                     return size + 'B'
-            except:
-                pass
+            except Exception as e:
+                logging.warning('Playstore get_size: {}'.format(e))
 
     @property
     def get_family(self):
@@ -126,10 +138,7 @@ class GooglePlay:
             if summary_title[0].text.lower() == 'eligible for family library':
                 family = True
             return family
-        except:
+        except Exception as e:
+            logging.warning('Playstore get_name: {}'.format(e))
             return 'NA'
-
-    @property
-    def get_test(self):
-        jon = self._soup.find_all('script', id='_ij')[0].contents[0]
-        return jon
+    
