@@ -90,3 +90,51 @@ class AppStore:
             return None
         except Exception as e:
             logging.warning('Appstore get_name: {}'.format(e))
+
+    @property
+    def get_family(self):
+        support_list = []
+        try:
+            source = self._soup.find_all('div', class_='supports-list__item__copy')
+            for s in source:
+                support_list.append(s.find('h3').text.strip().lower())
+            if 'family sharing' in support_list:
+                 return True
+            else:
+                return False
+        except IndexError:
+            return False
+        except Exception as e:
+            logging.warning('Appstore get_family: {}'.format(e))
+        
+    @property
+    def get_gamecenter(self):
+        support_list = []
+        try:
+            source = self._soup.find_all('div', class_='supports-list__item__copy')
+            for s in source:
+                support_list.append(s.find('h3').text.strip().lower())
+            if 'game center' in support_list:
+                 return True
+            else:
+                return False
+        except IndexError:
+            return False
+        except Exception as e:
+            logging.warning('Appstore get_gamecenter: {}'.format(e))
+
+    @property
+    def get_controller(self):
+        support_list = []
+        try:
+            source = self._soup.find_all('div', class_='supports-list__item__copy')
+            for s in source:
+                support_list.append(s.find('h3').text.strip().lower())
+            if 'game controllers' in support_list:
+                 return True
+            else:
+                return False
+        except IndexError:
+            return False
+        except Exception as e:
+            logging.warning('Appstore get_controller: {}'.format(e))

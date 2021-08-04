@@ -135,10 +135,15 @@ def generate_message(subreddit, app_list, count):
     
     if message != '':
         if subreddit_type == 'android':
-            message+="\n\n --- \n\n**Legend:** \n\n ▶️: Available in Play Pass \n\n 🏠: Eligble for Family Library"
+            message+= '\n\n --- \n\n**Legend:** \n\n'
+            message+= '🏠: Eligble for Family Library \n\n'
+            message+= '▶️: Available in Play Pass'
+
         elif subreddit_type == 'ios':
-            #message+='\n\n --- \n\n Hi! I am new and might be rough around the edges. Kindly use the feedback button below to inform me of any issues. Thanks! \n\n'
-            pass
+            message+= '\n\n --- \n\n**Legend:** \n\n'
+            message+= '🏠: Eligble for Family Sharing \n\n'
+            message+= '🕹: Supports Game Center \n\n'
+            message+= '🎮: Supports Game Controller'
     
     ## Append contact information and etc info
     #message+='--- \n\n **Update:** I am now able to detect `linkme` requests for both Android and iOS store! \n\n'
@@ -189,6 +194,19 @@ def ios_gen_msg(app): #return message for 1 app each time
     if app.get_iap is True:
         price = '{} with IAP'.format(str(price))
     size = app.get_size
+    if app.get_family is True:
+        family = '🏠'
+    else:
+        family = ''
+    if app.get_gamecenter is True:
+        gamecenter = '🕹'
+    else:
+        gamecenter = ''
+    if app.get_controller is True:
+        controller = '🎮'
+    else:
+        controller = ''
+    add_on = family + gamecenter + controller
     ## Prepare message ##
-    msg = "**[{}]({})** | {} | {} | {} \n\n".format(app.get_name,url,rating,price, size)
+    msg = "**[{}]({})** | {} | {} | {} | {} \n\n".format(app.get_name,url,rating,price, size, add_on)
     return msg
