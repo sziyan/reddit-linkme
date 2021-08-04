@@ -83,6 +83,7 @@ def android_get_app_link(search):
 
 def get_subreddit_type(subreddit):
     result = ''
+    subreddit = subreddit.lower()
     if subreddit in Config.android:
         result = 'android'
     elif subreddit in Config.ios:
