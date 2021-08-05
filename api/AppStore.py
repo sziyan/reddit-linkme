@@ -24,7 +24,7 @@ class AppStore:
             rating_votes = re.findall('([\w\W]+) Ratings', rating_votes)[0]
             rating_votes = rating_votes.split('•')
             score = rating_votes[0]
-            rating = score.split()[0] + '⭐️ '
+            rating = score.split()[0]
             return rating
         except IndexError:
             return None

@@ -1,16 +1,21 @@
 from api.GooglePlay import GooglePlay
 from api.AppStore import AppStore
+from api.Games import Games
 import urllib.parse
 from bs4 import BeautifulSoup
 import requests
 import jellyfish
 from config import Config
 import logging
+import json
 
-logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a', format='%(asctime)s %(levelname)s - %(message)s', datefmt='%d-%b-%y %I:%M:%S %p')
+logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a',
+                    format='%(asctime)s %(levelname)s - %(message)s', datefmt='%d-%b-%y %I:%M:%S %p')
 
-def similar(a,b):
-    return jellyfish.levenshtein_distance(a,b)
+
+def similar(a, b):
+    return jellyfish.levenshtein_distance(a, b)
+
 
 def ios_get_app_link(search):
     similarity_index = 99
@@ -18,24 +23,31 @@ def ios_get_app_link(search):
     result_list = []
     index = 0
     search_formatted = "-".join(search.split())
-    url = 'https://theappstore.org/search.php?search={}&platform=software'.format(search_formatted)
+    url = 'https://theappstore.org/search.php?search={}&platform=software'.format(
+        search_formatted)
     r = requests.get(url)
     data = r.text
     soup = BeautifulSoup(data, 'html.parser')
-    app = soup.find_all('div', class_="appmain") #obtain all app title on the page
-    for i in app[0:10]: #create a list of apps in result
-        result_list.append(i.find_all('div', class_='apptitle')[0].contents[0].strip().lower())
-    if search in result_list: #if able to find the app from 1 of the result
-        index = result_list.index(search) #find out the index of the item found
+    # obtain all app title on the page
+    app = soup.find_all('div', class_="appmain")
+    for i in app[0:10]:  # create a list of apps in result
+        result_list.append(i.find_all('div', class_='apptitle')[
+                           0].contents[0].strip().lower())
+    # if able to find the app from 1 of the result (must match exactly)
+    if search in result_list:
+        # find out the index of the item found
+        index = result_list.index(search)
     else:
         try:
-            for i in range(0,10): # loop through the list in case app is not 1st on list
-                app_name = app[i].find_all('div', class_='apptitle')[0].contents[0].strip()
-                if search in app_name.lower(): #if first on list, or search query is in the name of 1st of the list exit loop
+            for i in range(0, 10):  # loop through the list in case app is not 1st on list
+                app_name = app[i].find_all('div', class_='apptitle')[
+                    0].contents[0].strip()
+                if search in app_name.lower():  # if first on list, or search query is in the name of 1st of the list exit loop
                     index = i
                     break
                 else:
-                    similarity = similar(app_name.lower(), search) #use similarity index to determine which app is most likely the 1 we want
+                    # use similarity index to determine which app is most likely the 1 we want
+                    similarity = similar(app_name.lower(), search)
                     if similarity < similarity_index:
                         similarity_index = similarity
                         index = i
@@ -49,30 +61,33 @@ def ios_get_app_link(search):
     app_link = 'https://' + ('/').join(app_link[2:6])
     app_link = app_link.split('?')[0]
     return app_link
-        
+
 
 def android_get_app_link(search):
     search = search.lstrip().rstrip()
     index = 0
     search = search.lower()
     result_list = []
-    similarity_index = 99 #set to an arbituary high value so that prediction will start
-    url = 'https://play.google.com/store/search?q={}&c=apps'.format(urllib.parse.quote(search))
+    similarity_index = 99  # set to an arbituary high value so that prediction will start
+    url = 'https://play.google.com/store/search?q={}&c=apps'.format(
+        urllib.parse.quote(search))
     r = requests.get(url)
     data = r.text
     soup = BeautifulSoup(data, 'html.parser')
-    app = soup.find_all('div', class_='WsMG1c nnK0zc') #obtain all app title on the page
-    for i in app[0:3]:  #create a list of apps in result
+    # obtain all app title on the page
+    app = soup.find_all('div', class_='WsMG1c nnK0zc')
+    for i in app[0:3]:  # create a list of 1st 3 apps in result
         result_list.append(i.contents[0].lower())
-    if search in result_list: #if able to find the app from 1 of the result
-        index = result_list.index(search) #find out the index of the item found
+    if search in result_list:  # if able to find the app from 1 of the result
+        # find out the index of the item found
+        index = result_list.index(search)
     else:
-        for i in range(0,3): #only list the first 3 apps
+        for i in range(0, 3):  # only list the first 3 apps
             app_name = app[i].contents[0]
-            if search in app_name.lower(): # if the result contains the text of the search
+            if search in app_name.lower():  # if the result contains the text of the search
                 index = i
                 break
-            else: #if still cant find text of search in app search, perform similarity check
+            else:  # if still cant find text of search in app search, perform similarity check
                 similarity = similar(app_name.lower(), search)
                 if similarity < similarity_index:
                     similarity_index = similarity
@@ -81,6 +96,46 @@ def android_get_app_link(search):
     url = 'https://play.google.com' + url_div.get('href')
     return url
 
+
+def game_get_id(search):
+    search = search.lstrip().rstrip().lower()
+    result_list = []
+    index = 0
+    similarity_index = 99 # set to an arbituary high value so that prediction will start
+    auth_url = 'https://id.twitch.tv/oauth2/token'  #authorization URL
+    auth_header = {'client_id': Config.twitch_client_id,
+                   'client_secret': Config.twitch_client_secret, 'grant_type': 'client_credentials'}
+    r = requests.post(auth_url, data=auth_header)
+    reply = json.loads(r.text)
+    access_token = reply.get('access_token')
+    bearer = 'Bearer {}'.format(access_token)
+    header = {'Client-ID': Config.twitch_client_id,
+              'Authorization': bearer}
+
+    data = 'search "{}"; \n fields name;'.format(search)
+    url = 'https://api.igdb.com/v4/games/'
+    r = requests.post(url, headers=header, data=data)
+    if len(json.loads(r.text)) > 0:
+        result = json.loads(r.text)[0:3]
+        for i in result:
+            result_list.append(i.get('name').lower())
+        if search in result_list: # if able to find the app from 1 of the result
+            index = result_list.index(search) # find out the index of the item found
+        else:
+            for i in range(0,len(result_list)):
+                game = result_list[i] #contains name in the result_list
+                if search == game.lower():
+                    index = i
+                    break
+                else:
+                    similarity = similar(game, search)
+                    if similarity < similarity_index:
+                        index = i
+        id = result[index].get('id')
+        return id, access_token
+    else:
+        return None, None
+
 def get_subreddit_type(subreddit):
     result = ''
     subreddit = subreddit.lower()
@@ -88,11 +143,12 @@ def get_subreddit_type(subreddit):
         result = 'android'
     elif subreddit in Config.ios:
         result = 'ios'
-    elif subreddit in Config.pc:
-        result = 'pc'
+    elif subreddit in Config.games:
+        result = 'games'
     else:
         pass
     return result
+
 
 def create_object(subreddit, search):
     subreddit_type = get_subreddit_type(subreddit)
@@ -108,8 +164,13 @@ def create_object(subreddit, search):
             return None
         else:
             return AppStore(url)
+    elif subreddit_type == 'games':
+        id, access_token = game_get_id(search)
+        if id is not None:
+            return Games(id, access_token)
     else:
         return None
+
 
 def generate_message(subreddit, app_list, count):
     message = ''
@@ -119,48 +180,55 @@ def generate_message(subreddit, app_list, count):
         subreddit_type = get_subreddit_type(subreddit)
         if app is not None:
             if subreddit_type == 'android':
-                message+=android_gen_msg(app)
+                message += android_gen_msg(app)
             elif subreddit_type == 'ios':
-                message+=ios_gen_msg(app)
+                message += ios_gen_msg(app)
+            elif subreddit_type == 'games':
+                message += games_gen_msg(app)
             else:
-                logging.error('Error retrieving subreddit type from {}!'.format(subreddit))
+                logging.error(
+                    'Error retrieving subreddit type from {}!'.format(subreddit))
         else:
-            message+= 'I cannot find the app named {}'.format(app_search)
+            message += 'I cannot find the app named {}'.format(app_search)
     if count == 1:
         app = create_object(subreddit, app_list[0])
         desc = app.get_desc
-        desc = desc.split(' ')
-        desc = ' '.join(desc[0:35]).replace('\n', ' ') + ' ...'
-        message+= '> {}'.format(desc)
-    
+        if desc is not None:
+            desc = desc.split(' ')
+            desc = ' '.join(desc[0:35]).replace('\n', ' ') + ' ...'
+            message += '> {}'.format(desc)
+
     if message != '':
         if subreddit_type == 'android':
-            message+= '\n\n --- \n\n**Legend:** \n\n'
-            message+= '🏠: Eligble for Family Library \n\n'
-            message+= '▶️: Available in Play Pass'
+            message += '\n\n --- \n\n**Legend:** \n\n'
+            message += '🏠: Eligble for Family Library \n\n'
+            message += '▶️: Available in Play Pass'
 
         elif subreddit_type == 'ios':
-            message+= '\n\n --- \n\n**Legend:** \n\n'
-            message+= '🏠: Eligble for Family Sharing \n\n'
-            message+= '🕹: Supports Game Center \n\n'
-            message+= '🎮: Supports Game Controller'
-    
-    ## Append contact information and etc info
+            message += '\n\n --- \n\n**Legend:** \n\n'
+            message += '🏠: Eligble for Family Sharing \n\n'
+            message += '🕹: Supports Game Center \n\n'
+            message += '🎮: Supports Game Controller'
+
+    # Append contact information and etc info
     #message+='--- \n\n **Update:** I am now able to detect `linkme` requests for both Android and iOS store! \n\n'
-    message+='\n\n --- \n\n'
-    message+='^(I am a bot which retrieves information about your games or apps for you, to the best of my ability.)\n\n'
-    message+='To summon me, use `linkme: appname1, appname2` \n\n'
-    message+='^(Use the feedback button below if you want me to be enabled on your subreddit.)\n\n'
-    message+='^(I currently support Google Play Store & iOS App Store requests.) \n\n'
-    message+='|[Feedback]({})|PunyDev| \n\n'.format('https://www.reddit.com/message/compose?to=PunyDev&subject=Feedback%20about%20linkme%20bot&message=')
+    message += '\n\n --- \n\n'
+    message += '^(I am a bot which retrieves information about your games or apps for you, to the best of my ability.)\n\n'
+    message += '^(PS.As I am a new bot, I might not be able to serve your requests due to rate limit. This will go away when my karma goes up)\n\n'
+    message += 'To summon me, use `linkme: appname1, appname2` \n\n'
+    message += '^(Use the feedback button below if you want me to be enabled on your subreddit.)\n\n'
+    message += '^(I currently support Google Play Store, iOS App Store & Steam requests.) \n\n'
+    message += '|[Feedback]({})|PunyDev| \n\n'.format(
+        'https://www.reddit.com/message/compose?to=PunyDev&subject=Feedback%20about%20linkme%20bot&message=')
 
     return message
 
-def android_gen_msg(app):   #return message for 1 app each time
+
+def android_gen_msg(app):  # return message for 1 app each time
     msg = ''
     url = app.get_url
     if app.get_rating is not None:
-        rating = app.get_rating
+        rating = str(app.get_rating) + ' ⭐️'
     else:
         rating = 'NA'
     price = app.get_price
@@ -180,14 +248,16 @@ def android_gen_msg(app):   #return message for 1 app each time
     else:
         family = ''
     ## Prepare message ##
-    msg = "**[{}]({})** | {} ⭐️ | {} | {} | {} {} \n\n".format(app.get_name,url,rating,price, size, play_pass, family)
+    msg = "**[{}]({})** | {} | {} | {} | {} {} \n\n".format(app.get_name,
+                                                               url, rating, price, size, play_pass, family)
     return msg
 
-def ios_gen_msg(app): #return message for 1 app each time
+
+def ios_gen_msg(app):  # return message for 1 app each time
     msg = ''
     url = app.get_url
     if app.get_rating is not None:
-        rating = app.get_rating
+        rating = str(app.get_rating) + ' ⭐️'
     else:
         rating = 'NA'
     price = app.get_price
@@ -208,5 +278,38 @@ def ios_gen_msg(app): #return message for 1 app each time
         controller = ''
     add_on = family + gamecenter + controller
     ## Prepare message ##
-    msg = "**[{}]({})** | {} | {} | {} | {} \n\n".format(app.get_name,url,rating,price, size, add_on)
+    msg = "**[{}]({})** | {} | {} | {} | {} \n\n".format(app.get_name,
+                                                         url, rating, price, size, add_on)
+    return msg
+
+def games_gen_msg(app):
+    msg = ''
+    if 'Official' in app.get_website:
+        url = app.get_website['Official']
+    else:
+        url = app.get_url
+    website_msg = []
+    if app.get_rating is not None:
+        rating = str(app.get_rating) + ' ⭐️'
+    else:
+        rating = 'NA'
+    if app.get_platforms is not None:
+        platform = app.get_platforms
+    else:
+        platform = 'No platforms released'
+    if app.get_release_year is not None:
+        release_year = app.get_release_year
+    else:
+        release_year = 'NA'
+    try:
+        for key, value in app.get_website.items():
+            website_msg.append('[{}]({})'.format(key,value))
+        website_msg = (', ').join(website_msg) #join all websites in list into 1 string
+
+    except:
+        website_msg = 'NA'
+
+    ## Prepare message ##
+    msg = "**[{}]({})** | {} | Platforms: {} | Released on {} | \n\n ^(Links: {}) \n\n".format(app.get_name,
+                                                         url, rating, platform, release_year, website_msg)
     return msg
