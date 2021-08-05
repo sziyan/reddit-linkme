@@ -8,6 +8,10 @@ import jellyfish
 from config import Config
 import logging
 import json
+import time
+
+ACCESS_TOKEN = '' #set global variable so each linkme request will only use 1 access token -> Reduces time
+to_refresh_time = 0 #time when we need to refresh token
 
 logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a',
                     format='%(asctime)s %(levelname)s - %(message)s', datefmt='%d-%b-%y %I:%M:%S %p')
@@ -16,6 +20,19 @@ logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a',
 def similar(a, b):
     return jellyfish.levenshtein_distance(a, b)
 
+def refresh_token(): #generate access token for use with IGDB API
+    global ACCESS_TOKEN
+    global to_refresh_time
+    auth_url = 'https://id.twitch.tv/oauth2/token'  #authorization URL
+    auth_header = {'client_id': Config.twitch_client_id,
+                   'client_secret': Config.twitch_client_secret, 'grant_type': 'client_credentials'}
+    r = requests.post(auth_url, data=auth_header)
+    reply = json.loads(r.text)
+    access_token = reply.get('access_token')
+    expires = reply.get('expires_in')
+    ACCESS_TOKEN = access_token
+    current_time = int(time.time()) 
+    to_refresh_time = current_time + int(expires) - 5000  # set the time which we have to refresh token, offset by 5000 seconds in case
 
 def ios_get_app_link(search):
     similarity_index = 99
@@ -98,17 +115,24 @@ def android_get_app_link(search):
 
 
 def game_get_id(search):
+    global ACCESS_TOKEN
+    global to_refresh_time
+    if to_refresh_time == 0:    #only happens when this is first start of the bot
+        refresh_token()
+        logging.info('Token created!')
+        print('No token exists. Token created!')
+    else:   #bot already running
+        current_time = int(time.time()) #get current time
+        if current_time >= to_refresh_time: #time expires
+            refresh_token()
+            logging.info('Token expired. Refreshed token!')
+            print('Token expired. Refreshed token!')
+
     search = search.lstrip().rstrip().lower()
     result_list = []
     index = 0
     similarity_index = 99 # set to an arbituary high value so that prediction will start
-    auth_url = 'https://id.twitch.tv/oauth2/token'  #authorization URL
-    auth_header = {'client_id': Config.twitch_client_id,
-                   'client_secret': Config.twitch_client_secret, 'grant_type': 'client_credentials'}
-    r = requests.post(auth_url, data=auth_header)
-    reply = json.loads(r.text)
-    access_token = reply.get('access_token')
-    bearer = 'Bearer {}'.format(access_token)
+    bearer = 'Bearer {}'.format(ACCESS_TOKEN)
     header = {'Client-ID': Config.twitch_client_id,
               'Authorization': bearer}
 
@@ -134,9 +158,9 @@ def game_get_id(search):
                         similarity_index = similarity
                         index = i
         id = result[index].get('id')
-        return id, access_token
+        return id
     else:
-        return None, None
+        return None
 
 def get_subreddit_type(subreddit):
     result = ''
@@ -167,18 +191,21 @@ def create_object(subreddit, search):
         else:
             return AppStore(url)
     elif subreddit_type == 'games':
-        id, access_token = game_get_id(search)
+        id = game_get_id(search)
         if id is not None:
-            return Games(id, access_token)
+            return Games(id)
     else:
         return None
 
 
 def generate_message(subreddit, app_list, count):
     message = ''
+    first_app = '' #cache first app in case it is the only app so dont need to request from API again -> Reduces time
     for i in range(0, count):
         app_search = app_list[i]
         app = create_object(subreddit, app_search)
+        if i == 0:
+            first_app = app #cache first app for use if there is only 1 app searched for adding description
         subreddit_type = get_subreddit_type(subreddit)
         if app is not None:
             if subreddit_type == 'android':
@@ -191,9 +218,9 @@ def generate_message(subreddit, app_list, count):
                 logging.error(
                     'Error retrieving subreddit type from {}!'.format(subreddit))
         else:
-            message += 'I cannot find the app named {}'.format(app_search)
+            message += 'Unfortunately, I am unable to find {}. \n\nPerhaps try refining your search term.'.format(app_search)
     if count == 1:
-        app = create_object(subreddit, app_list[0])
+        app = first_app 
         desc = app.get_desc
         if desc is not None:
             desc = desc.split(' ')
@@ -212,11 +239,11 @@ def generate_message(subreddit, app_list, count):
             message += '🕹: Supports Game Center \n\n'
             message += '🎮: Supports Game Controller'
 
-    # Append contact information and etc info
+    # Append contact information and additional info
     #message+='--- \n\n **Update:** I am now able to detect `linkme` requests for both Android and iOS store! \n\n'
     message += '\n\n --- \n\n'
     message += '^(I am a bot which retrieves information about your games or apps for you, to the best of my ability.)\n\n'
-    message += '^(PS.As I am a new bot, I might not be able to serve your requests due to rate limit. This will go away once my karma goes up)\n\n'
+    message += '^(PS. As I am a new bot, I might not be able to serve your requests due to rate limit. This will go away once my karma goes up)\n\n'
     message += 'To summon me, use `linkme: appname1, appname2` \n\n'
     message += '^(Use the feedback button below if you want me to be enabled on your subreddit.)\n\n'
     message += '^(I currently support Google Play Store, iOS App Store & Steam requests.) \n\n'
@@ -287,19 +314,22 @@ def ios_gen_msg(app):  # return message for 1 app each time
 def games_gen_msg(app):
     msg = ''
     genres = []
-    try:
+    website_msg = []
+
+    try:    #if official site exists, use official website, else use the URL provided by IGDB
         if 'Official' in app.get_website:
             url = app.get_website['Official']
         else:
             url = app.get_url
     except:
         url = app.get_url
-    website_msg = []
-    if app.get_rating is not None:
+    
+    if app.get_rating is not None: #get rating
         rating = str(app.get_rating) + ' ⭐️'
     else:
         rating = 'NA'
-    if app.get_platforms is not None:
+
+    if app.get_platforms is not None: #get platform
         platforms = app.get_platforms
         if len(platforms) >= 5:
             platforms = (', ').join(platforms[0:5]) + ' & more'
@@ -307,21 +337,27 @@ def games_gen_msg(app):
             platforms = (', ').join(platforms)
     else:
         platforms = 'NA'
-    if app.get_release_year is not None:
+
+    if app.get_release_year is not None: #get release year
         release_year = app.get_release_year
     else:
         release_year = 'NA'
-    try:
+
+    if app.get_website is not None:    #get list of websites
         for key, value in app.get_website.items():
             website_msg.append('[{}]({})'.format(key,value))
         website_msg = (', ').join(website_msg) #join all websites in list into 1 string
-    except:
+    else:
         website_msg = 'NA'
-    for g in app.get_genres:
-        if g == 'Role-playing (RPG)': #Convert string to 'RPG' as brackets will cause reddit markdown to ignore superscripts
-            g = 'RPG'
-        genres.append(g)
-    genres = (', ').join(genres)
+
+    if app.get_genres is not None: #get genres
+        for g in app.get_genres:
+            if g == 'Role-playing (RPG)': #Convert string to 'RPG' as brackets will cause reddit markdown to ignore superscripts
+                g = 'RPG'
+            genres.append(g)
+        genres = (', ').join(genres)
+    else:
+        genres = 'NA'
     category = app.get_category
 
     ## Prepare message ##

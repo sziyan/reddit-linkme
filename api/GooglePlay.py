@@ -15,7 +15,7 @@ class GooglePlay:
 
     @property
     def get_url(self):
-        return self._url
+        return self._url + '&referrer=utm_source%3Dreddit-LinkMe_Bot'   #append for app developers to track where the traffic is coming from
 
     @property
     def get_name(self):

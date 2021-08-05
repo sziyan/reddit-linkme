@@ -2,11 +2,13 @@ from config import Config
 import requests
 import json
 from datetime import datetime
+import api.utils
 
 
 class Games:
-    def __init__(self, id, access_token):
+    def __init__(self, id):
         self._id = id
+        access_token = api.utils.ACCESS_TOKEN
         bearer = 'Bearer {}'.format(access_token)
         self._header = {'Client-ID': Config.twitch_client_id, 'Authorization': bearer}
         payload = 'fields *; \nwhere id = {};'.format(self._id)
@@ -67,14 +69,17 @@ class Games:
     def get_platforms(self):
         platforms = []
         url = 'https://api.igdb.com/v4/platforms/'
-        platform_ids = self._result.get('platforms')
-        for id in platform_ids:
-            payload = 'fields abbreviation,websites; \nwhere id = {};'.format(id)
-            result = self.send_request(url, payload)
-            platforms.append(result.get('abbreviation'))
-        if len(platforms) != 0:
-            return platforms
-        else:
+        try:
+            platform_ids = self._result.get('platforms')
+            for id in platform_ids:
+                payload = 'fields abbreviation,websites; \nwhere id = {};'.format(id)
+                result = self.send_request(url, payload)
+                platforms.append(result.get('abbreviation'))
+            if len(platforms) != 0:
+                return platforms
+            else:
+                return None
+        except:
             return None
 
     @property
@@ -116,16 +121,19 @@ class Games:
 
     @property
     def get_keywords(self):
-        keyword_list = self._result.get('keywords')
-        keywords = []
-        url = 'https://api.igdb.com/v4/keywords'
-        for id in keyword_list:
-            payload = 'fields name; \n where id = {};'.format(id)
-            result = self.send_request(url, payload)
-            keywords.append(result.get('name'))
-        if len(keywords) > 0:
-            return keywords
-        else:
+        try:
+            keyword_list = self._result.get('keywords')
+            keywords = []
+            url = 'https://api.igdb.com/v4/keywords'
+            for id in keyword_list:
+                payload = 'fields name; \n where id = {};'.format(id)
+                result = self.send_request(url, payload)
+                keywords.append(result.get('name'))
+            if len(keywords) > 0:
+                return keywords
+            else:
+                return None
+        except:
             return None
 
     @property
