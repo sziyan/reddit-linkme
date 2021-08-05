@@ -121,6 +121,7 @@ def game_get_id(search):
             result_list.append(i.get('name').lower())
         if search in result_list: # if able to find the app from 1 of the result
             index = result_list.index(search) # find out the index of the item found
+        
         else:
             for i in range(0,len(result_list)):
                 game = result_list[i] #contains name in the result_list
@@ -130,6 +131,7 @@ def game_get_id(search):
                 else:
                     similarity = similar(game, search)
                     if similarity < similarity_index:
+                        similarity_index = similarity
                         index = i
         id = result[index].get('id')
         return id, access_token
@@ -214,7 +216,7 @@ def generate_message(subreddit, app_list, count):
     #message+='--- \n\n **Update:** I am now able to detect `linkme` requests for both Android and iOS store! \n\n'
     message += '\n\n --- \n\n'
     message += '^(I am a bot which retrieves information about your games or apps for you, to the best of my ability.)\n\n'
-    message += '^(PS.As I am a new bot, I might not be able to serve your requests due to rate limit. This will go away when my karma goes up)\n\n'
+    message += '^(PS.As I am a new bot, I might not be able to serve your requests due to rate limit. This will go away once my karma goes up)\n\n'
     message += 'To summon me, use `linkme: appname1, appname2` \n\n'
     message += '^(Use the feedback button below if you want me to be enabled on your subreddit.)\n\n'
     message += '^(I currently support Google Play Store, iOS App Store & Steam requests.) \n\n'
@@ -284,9 +286,13 @@ def ios_gen_msg(app):  # return message for 1 app each time
 
 def games_gen_msg(app):
     msg = ''
-    if 'Official' in app.get_website:
-        url = app.get_website['Official']
-    else:
+    genres = []
+    try:
+        if 'Official' in app.get_website:
+            url = app.get_website['Official']
+        else:
+            url = app.get_url
+    except:
         url = app.get_url
     website_msg = []
     if app.get_rating is not None:
@@ -294,9 +300,13 @@ def games_gen_msg(app):
     else:
         rating = 'NA'
     if app.get_platforms is not None:
-        platform = app.get_platforms
+        platforms = app.get_platforms
+        if len(platforms) >= 5:
+            platforms = (', ').join(platforms[0:5]) + ' & more'
+        else:
+            platforms = (', ').join(platforms)
     else:
-        platform = 'No platforms released'
+        platforms = 'NA'
     if app.get_release_year is not None:
         release_year = app.get_release_year
     else:
@@ -305,11 +315,16 @@ def games_gen_msg(app):
         for key, value in app.get_website.items():
             website_msg.append('[{}]({})'.format(key,value))
         website_msg = (', ').join(website_msg) #join all websites in list into 1 string
-
     except:
         website_msg = 'NA'
+    for g in app.get_genres:
+        if g == 'Role-playing (RPG)': #Convert string to 'RPG' as brackets will cause reddit markdown to ignore superscripts
+            g = 'RPG'
+        genres.append(g)
+    genres = (', ').join(genres)
+    category = app.get_category
 
     ## Prepare message ##
-    msg = "**[{}]({})** | {} | Platforms: {} | Released on {} | \n\n ^(Links: {}) \n\n".format(app.get_name,
-                                                         url, rating, platform, release_year, website_msg)
+    msg = "**[{}]({})** | {} | **Platforms:** {} | **Release Year:** {} | \n\n ^(**Category:** {}) \n\n ^(**Links:** {}) \n\n ^(**Tags:** {})\n\n".format(app.get_name,
+                                                         url, rating, platforms, release_year, category, website_msg, genres)
     return msg

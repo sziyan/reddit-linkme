@@ -14,6 +14,23 @@ class Games:
         r = requests.post(url, headers=self._header, data=payload)
         self._result = json.loads(r.text)[0]
     
+    def send_request(self, url, payload):
+        r = requests.post(url, headers=self._header, data=payload)
+        return json.loads(r.text)[0]
+    
+    def categorize(self,id):
+        if id == 1:
+            name = 'Official'
+        elif id == 2:
+            name = 'Wikia'
+        elif id == 13:
+            name = 'Steam'
+        elif id == 16:
+            name = 'Epic Games'
+        elif id == 17:
+            name = 'GOG' 
+        return name
+
     @property
     def get_id(self):
         return self._id
@@ -30,17 +47,32 @@ class Games:
             return None
 
     @property
+    def get_genres(self):
+        try:
+            genres_list = []
+            url = 'https://api.igdb.com/v4/genres'
+            genres = self._result.get('genres')
+            for g in genres:
+                payload = 'fields name; \nwhere id = {};'.format(g)
+                result = self.send_request(url, payload)
+                genres_list.append(result.get('name'))
+            if len(genres_list) > 0:
+                return genres_list
+            else:
+                return None
+        except:
+            return None
+
+    @property
     def get_platforms(self):
         platforms = []
         url = 'https://api.igdb.com/v4/platforms/'
         platform_ids = self._result.get('platforms')
         for id in platform_ids:
             payload = 'fields abbreviation,websites; \nwhere id = {};'.format(id)
-            r = requests.post(url, headers=self._header, data=payload)
-            result = json.loads(r.text)[0]
+            result = self.send_request(url, payload)
             platforms.append(result.get('abbreviation'))
         if len(platforms) != 0:
-            platforms = (', ').join(platforms)
             return platforms
         else:
             return None
@@ -54,8 +86,7 @@ class Games:
         try:
             for id in website_list:
                 payload = 'fields category, url; \nwhere id = {};'.format(id)
-                r = requests.post(url, headers=self._header, data=payload)
-                result = json.loads(r.text)[0]
+                result = self.send_request(url, payload)
                 category_id = result.get('category')
                 if category_id in allowed_category:
                     category_name = self.categorize(category_id)
@@ -63,19 +94,6 @@ class Games:
             return websites
         except:
             return None
-    
-    def categorize(self,id):
-        if id == 1:
-            name = 'Official'
-        elif id == 2:
-            name = 'Wikia'
-        elif id == 13:
-            name = 'Steam'
-        elif id == 16:
-            name = 'Epic Games'
-        elif id == 17:
-            name = 'GOG' 
-        return name
 
     @property
     def get_url(self):
@@ -96,4 +114,35 @@ class Games:
         except:
             return None
 
+    @property
+    def get_keywords(self):
+        keyword_list = self._result.get('keywords')
+        keywords = []
+        url = 'https://api.igdb.com/v4/keywords'
+        for id in keyword_list:
+            payload = 'fields name; \n where id = {};'.format(id)
+            result = self.send_request(url, payload)
+            keywords.append(result.get('name'))
+        if len(keywords) > 0:
+            return keywords
+        else:
+            return None
+
+    @property
+    def get_category(self):
+        try:
+            category_id = self._result.get('category')
+            id_name = {0: 'Main Game',
+            1:'DLC',
+            2:'Expansion',
+            3:'Bundle',
+            8:'Remake',
+            9: 'Remaster',
+            11: 'Port'}
+            if category_id in id_name:
+                return id_name[category_id]
+            else:
+                return 'Others'
+        except:
+            return 'Others'
 
