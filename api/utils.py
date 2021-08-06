@@ -119,7 +119,7 @@ def game_get_id(search):
     global to_refresh_time
     if to_refresh_time == 0:    #only happens when this is first start of the bot
         refresh_token()
-        logging.info('Token created!')
+        logging.info('No token exists. Token created!')
         print('No token exists. Token created!')
     else:   #bot already running
         current_time = int(time.time()) #get current time
