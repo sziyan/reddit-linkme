@@ -10,7 +10,7 @@ This bot currently supports the following platforms:
 
 ## Configuration
 
-Before starting the bot, we have to configure our configuration file.
+Before starting the bot, we have to create our configuration file.
 
 Create config.py in the root folder with the following content:
 
@@ -45,4 +45,17 @@ class Config:
 
 Obtain twitch client ID and secret [here](https://api-docs.igdb.com/#authentication)
 
-Obtain reddit client ID and secret using scrip with instructions [here]()
+Obtain reddit client ID and secret using scrip with instructions [here](https://praw.readthedocs.io/en/stable/getting_started/authentication.html)
+
+Install dependencies in requirements.txt
+
+`pip install -r requirements.txt`
+
+Finally, start the bot in your console
+
+`python app.py`
+
+## Invoking the bot
+The bot will monitor all subreddits in the configuration file, and depending on which category the subreddit is in, will reply with different information.
+
+Reply to a submission or comment with `linkme: game1, app1`
