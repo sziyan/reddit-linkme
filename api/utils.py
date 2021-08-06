@@ -242,6 +242,8 @@ def generate_message(subreddit, app_list, count):
     # Append contact information and additional info
     #message+='--- \n\n **Update:** I am now able to detect `linkme` requests for both Android and iOS store! \n\n'
     message += '\n\n --- \n\n'
+    message += '^(Wrong game/app? Reply to my comment with !remove and I will delete this comment) \n\n'
+    message += '^(Only comment author can do this) \n\n'
     message += 'To summon me, use `linkme: appname1, appname2` \n\n'
     message += '^(Use the feedback button below if you want me to be enabled on your subreddit.)\n\n'
     message += '^(I currently support Google Play Store, iOS App Store & Steam requests.) \n\n'

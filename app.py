@@ -17,7 +17,7 @@ reddit = praw.Reddit(
     client_id=Config.client_id,
     client_secret=Config.client_secret,
     password=Config.password,
-    user_agent="GooglePlayLinks_Bot by u/PunyDev",
+    user_agent="{} by u/PunyDev".format(Config.username),
     username=Config.username,
 )
 
