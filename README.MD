@@ -14,12 +14,18 @@ Before starting the bot, we have to configure our configuration file.
 
 Create config.py in the root folder with the following content:
 
+Subreddits under android will be returned with results from Google Play Store
+
+Subreddits under ios will be returned with results from Apple App Store
+
+Subreddits under pc will be returned with results from IGDB
+
 ```python
 class Config:
-    #subreddit to monitor
-    android = ['androidgaming', 'androidapps']
-    ios = ['iosgaming', 'iosapps', 'applearcade']
-    pc = ['gamesuggestion']
+    #subreddits to monitor
+    android = ['android']
+    ios = ['ios']
+    pc = ['steam']
     subreddit = ios + android + pc
 
     #twitch api for IGDB
@@ -33,8 +39,10 @@ class Config:
     client_secret = ''
    
    #additional configurations
-    max_apps = 15
+    max_apps = 15   #max number of queries to retrieve per comment
 
 ```
 
-Obtain twitch & reddit API from the respective websites  
+Obtain twitch client ID and secret [here](https://api-docs.igdb.com/#authentication)
+
+Obtain reddit client ID and secret using scrip with instructions [here]()
