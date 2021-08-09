@@ -232,15 +232,15 @@ def generate_message(subreddit, app_list, count):
 
     if message != '':
         if subreddit_type == 'android':
-            message += '\n\n^(**Legend:** |🏠: Family Library| ▶️: Play Pass|)\n\n'
+            message += '\n\n^(**Legend:** |🏠: Family Library| ▶️: Play Pass|)'
 
         elif subreddit_type == 'ios':
-            message += '\n\n^(**Legend:** |🏠: Family Sharing| 🕹: Game Center| 🎮: Game Controller|) \n\n'
+            message += '\n\n^(**Legend:** |🏠: Family Sharing| 🕹: Game Center| 🎮: Game Controller|)'
 
     # Append contact information and additional info
     #message+='--- \n\n **Update:** I am now able to detect `linkme` requests for both Android and iOS store! \n\n'
     #message += '\n\n --- \n\n'
-    message += '^(Comment author may reply with !remove if wrong result is provided) \n\n'
+    message += '\n\n^(Comment author may reply with !remove if wrong result is provided) \n\n'
     #message += 'To summon me, use `linkme: appname1, appname2` \n\n'
     #message += '^(Use the feedback button below if you want me to be enabled on your subreddit.)\n\n'
     #message += '^(I currently support Google Play Store, iOS App Store & Steam requests.) \n\n'
@@ -358,6 +358,6 @@ def games_gen_msg(app):
     category = app.get_category
 
     ## Prepare message ##
-    msg = "**[{}]({})** | {} | **Platforms:** {} | **Release Year:** {} | \n\n ^(**Category:** {}) \n\n ^(**Links:** {}) \n\n ^(**Tags:** {})\n\n".format(app.get_name,
-                                                         url, rating, platforms, release_year, category, website_msg, genres)
+    msg = "**[{}]({})** | {} | **Platforms:** {} | **Release Year:** {} | \n\n **Links:** {} \n\n  ^(| **Category:** {} |) ^(| **Tags:** {} |) \n\n".format(app.get_name,
+                                                         url, rating, platforms, release_year, website_msg, category, genres)
     return msg
