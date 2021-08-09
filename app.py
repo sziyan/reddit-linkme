@@ -64,7 +64,7 @@ try:
             count = 1 #number of apps to search, changes accordingly if max apps has reached or not
             if app_count > 0:
                 logging.info("{} is searching for {} app(s) in /r/{}: {}".format(comments.author.name, app_count,comments.subreddit.display_name, ",".join(app_list)))
-                print("{} is searching for {} app(s): {}".format(comments.author.name, app_count, ",".join(app_list)))
+                print("{} is searching for {} app(s) in /r/{}: {}".format(comments.author.name, app_count,comments.subreddit.display_name, ",".join(app_list)))
             else: #no app being searched, by right its not possible
                 continue
             if app_count > Config.max_apps:
