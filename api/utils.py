@@ -358,6 +358,6 @@ def games_gen_msg(app):
     category = app.get_category
 
     ## Prepare message ##
-    msg = "**[{}]({})** | {} | **Platforms:** {} | **Release Year:** {} | \n\n **Links:** {} \n\n  ^(| **Category:** {} |) ^(| **Tags:** {} |) \n\n".format(app.get_name,
+    msg = "**[{}]({})** | {} | **Platforms:** {} | **Release Year:** {} | \n\n **Links:** {} \n\n  ^(| **Category:** {} ) ^(| **Tags:** {} |) \n\n".format(app.get_name,
                                                          url, rating, platforms, release_year, website_msg, category, genres)
     return msg
