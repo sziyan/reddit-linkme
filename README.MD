@@ -33,13 +33,14 @@ class Config:
     twitch_client_secret = ''
 
     #reddit bot credentials
-    username = ''
-    password = ''
+    username = ''   #reddit bot username
+    password = ''   #reddit bot password
     client_id = ''
     client_secret = ''
    
    #additional configurations
-    max_apps = 15   #max number of queries to retrieve per comment
+    max_apps = 15   #max number of app/games queries to retrieve per comment
+    bot_owner = ''  #reddit username of bot owner. Used to overwrite deletion of bot comment replies with !remove
 
 ```
 
