@@ -1,13 +1,22 @@
 import praw
 from config import Config
 import logging
+import os
+
+## set config variables
+client_id = Config.client_id or os.environ.get('CLIENT_ID')
+client_secret = Config.client_secret or os.environ.get('CLIENT_ID')
+password = Config.password or os.environ.get('PASSWORD')
+username = Config.username or os.environ.get('USERNAME')
+bot_owner = Config.bot_owner or os.environ.get('BOT_OWNER')
+
 
 reddit = praw.Reddit(
-    client_id=Config.client_id,
-    client_secret=Config.client_secret,
-    password=Config.password,
-    user_agent="{} by u/PunyDev".format(Config.username),
-    username=Config.username
+    client_id=client_id,
+    client_secret=client_secret,
+    password=password,
+    user_agent="{} by u/PunyDev".format(username),
+    username=username
 )
 
 logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a', format='%(asctime)s %(levelname)s - %(message)s', datefmt='%d-%b-%y %I:%M:%S %p')
@@ -32,10 +41,10 @@ try:
                 firstLevelComment = reddit.comment(id=message.parent_id)    #1st level comment object
                 firstLevelAuthor = firstLevelComment.author.name
                 subreddit = firstLevelComment.subreddit.display_name
-                if firstLevelAuthor == Config.username: #signify message is posted by bot
+                if firstLevelAuthor == username: #signify message is posted by bot
                     secondLevelComment = reddit.comment(id=firstLevelComment.parent_id) #2nd level comment object
                     secondLevelAuthor = secondLevelComment.author.name
-                    if secondLevelAuthor == comment_author.name or comment_author.name.lower() == Config.bot_owner.lower():
+                    if secondLevelAuthor == comment_author.name or comment_author.name.lower() == bot_owner.lower():
                         firstLevelComment.delete()
                         logging.info('{} deleted comment in r/{}'.format(comment_author.name, subreddit))
                         print('{} deleted comment in r/{}'.format(comment_author.name, subreddit))     

@@ -3,6 +3,10 @@ import requests
 import json
 from datetime import datetime
 import api.utils
+import os
+
+## Set config variables
+twitch_client_id = Config.twitch_client_id or os.environ.get('TWITCH_CLIENT_ID')
 
 
 class Games:
@@ -10,7 +14,7 @@ class Games:
         self._id = id
         access_token = api.utils.ACCESS_TOKEN
         bearer = 'Bearer {}'.format(access_token)
-        self._header = {'Client-ID': Config.twitch_client_id, 'Authorization': bearer}
+        self._header = {'Client-ID': twitch_client_id, 'Authorization': bearer}
         payload = 'fields *; \nwhere id = {};'.format(self._id)
         url = 'https://api.igdb.com/v4/games/'
         r = requests.post(url, headers=self._header, data=payload)

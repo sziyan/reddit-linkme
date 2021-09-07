@@ -9,6 +9,15 @@ from config import Config
 import logging
 import json
 import time
+import os
+
+
+## Set config variables
+twitch_client_id = Config.twitch_client_id or os.environ.get('TWITCH_CLIENT_ID')
+twitch_client_secret = Config.twitch_client_secret or os.environ.get('TWITCH_CLIENT_SECRET')
+android = Config.android or os.environ.get('ANDROID')
+ios = Config.ios or os.environ.get('IOS')
+games = Config.games or os.environ.get('GAMES')
 
 ## IGDB token handling ##
 ACCESS_TOKEN = '' #set global variable so each linkme request will only use 1 access token -> Reduces time and outgoing requests
@@ -27,8 +36,8 @@ def refresh_token(): #generate access token for use with IGDB API
     global ACCESS_TOKEN
     global to_refresh_time
     auth_url = 'https://id.twitch.tv/oauth2/token'  #authorization URL
-    auth_header = {'client_id': Config.twitch_client_id,
-                   'client_secret': Config.twitch_client_secret, 'grant_type': 'client_credentials'}
+    auth_header = {'client_id': twitch_client_id,
+                   'client_secret': twitch_client_secret, 'grant_type': 'client_credentials'}
     r = requests.post(auth_url, data=auth_header)
     reply = json.loads(r.text)
     access_token = reply.get('access_token')
@@ -136,7 +145,7 @@ def game_get_id(search):
     index = 0
     similarity_index = 99 # set to an arbituary high value so that prediction will start
     bearer = 'Bearer {}'.format(ACCESS_TOKEN)
-    header = {'Client-ID': Config.twitch_client_id,
+    header = {'Client-ID': twitch_client_id,
               'Authorization': bearer}
 
     data = 'search "{}"; \n fields name;'.format(search)
@@ -168,11 +177,11 @@ def game_get_id(search):
 def get_subreddit_type(subreddit):
     result = ''
     subreddit = subreddit.lower()
-    if subreddit in Config.android:
+    if subreddit in android:
         result = 'android'
-    elif subreddit in Config.ios:
+    elif subreddit in ios:
         result = 'ios'
-    elif subreddit in Config.games:
+    elif subreddit in games:
         result = 'games'
     else:
         pass

@@ -7,18 +7,26 @@ from config import Config
 import re
 import markdown
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a', format='%(asctime)s %(levelname)s - %(message)s', datefmt='%d-%b-%y %I:%M:%S %p')
 logging.info("Bot started successfully")
 print('Bot started successfully')
 
+## set config variables
+client_id = Config.client_id or os.environ.get('CLIENT_ID')
+client_secret = Config.client_secret or os.environ.get('CLIENT_ID')
+password = Config.password or os.environ.get('PASSWORD')
+username = Config.username or os.environ.get('USERNAME')
+subreddit = Config.subreddit or os.environ.get('SUBREDDIT')
+max_apps = Config.max_apps or os.environ.get('MAX_APPS')
 
 reddit = praw.Reddit(
-    client_id=Config.client_id,
-    client_secret=Config.client_secret,
-    password=Config.password,
-    user_agent="{} by u/PunyDev".format(Config.username),
-    username=Config.username,
+    client_id=client_id,
+    client_secret=client_secret,
+    password=password,
+    user_agent="{} by u/PunyDev".format(username),
+    username=username,
 )
 
 link_me_regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
@@ -47,11 +55,11 @@ def get_all_app_requests(linkme_requests):
 
 link_me_regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
 
-subreddit = reddit.subreddit(("+").join(Config.subreddit))
+subreddit = reddit.subreddit(("+").join(subreddit))
 
 try:
     for comments in subreddit.stream.comments(skip_existing=True):
-        if comments.author.name == Config.username:
+        if comments.author.name == username:
             continue
         else:
             message = "" # creating blank message
@@ -67,10 +75,10 @@ try:
                 print("{} is searching for {} app(s) in /r/{}: {}".format(comments.author.name, app_count,comments.subreddit.display_name, ",".join(app_list)))
             else: #no app being searched, by right its not possible
                 continue
-            if app_count > Config.max_apps:
-                msg = "You have searched for {} apps. I will only link to the first {} apps.\n\n".format(app_count, Config.max_apps)
+            if app_count > max_apps:
+                msg = "You have searched for {} apps. I will only link to the first {} apps.\n\n".format(app_count, max_apps)
                 message +=msg
-                count = Config.max_apps #if exceed max number of apps, will only count 15
+                count = max_apps #if exceed max number of apps, will only count 15
             else:
                 count = app_count
             message+=util.generate_message(comments.subreddit.display_name, app_list, count)
