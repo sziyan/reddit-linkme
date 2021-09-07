@@ -7,6 +7,7 @@ import re
 import markdown
 import logging
 import os
+import remove_comment
 
 try:
     from config import Config
