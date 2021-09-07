@@ -18,7 +18,7 @@ client_id = Config.client_id or os.environ.get('CLIENT_ID')
 client_secret = Config.client_secret or os.environ.get('CLIENT_ID')
 password = Config.password or os.environ.get('PASSWORD')
 username = Config.username or os.environ.get('USERNAME')
-subreddit = Config.subreddit or os.environ.get('SUBREDDIT')
+subreddit = Config.subreddit or os.environ.get('IOS') + os.environ.get('ANDROID') + os.environ.get('GAMES')
 max_apps = Config.max_apps or os.environ.get('MAX_APPS')
 
 reddit = praw.Reddit(
