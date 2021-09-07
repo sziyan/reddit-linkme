@@ -1,9 +1,13 @@
-from config import Config
 import requests
 import json
 from datetime import datetime
 import api.utils
 import os
+
+try:
+    from config import Config
+except:
+    pass
 
 ## Set config variables
 try:

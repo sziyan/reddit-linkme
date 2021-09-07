@@ -1,7 +1,11 @@
 import praw
-from config import Config
 import logging
 import os
+
+try:
+    from config import Config
+except:
+    pass
 
 ## set config variables
 try:
