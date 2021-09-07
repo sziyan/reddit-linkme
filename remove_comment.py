@@ -4,11 +4,18 @@ import logging
 import os
 
 ## set config variables
-client_id = Config.client_id or os.environ.get('CLIENT_ID')
-client_secret = Config.client_secret or os.environ.get('CLIENT_ID')
-password = Config.password or os.environ.get('PASSWORD')
-username = Config.username or os.environ.get('USERNAME')
-bot_owner = Config.bot_owner or os.environ.get('BOT_OWNER')
+try:
+    client_id = Config.client_id or os.environ.get('CLIENT_ID')
+    client_secret = Config.client_secret or os.environ.get('CLIENT_ID')
+    password = Config.password or os.environ.get('PASSWORD')
+    username = Config.username or os.environ.get('USERNAME')
+    bot_owner = Config.bot_owner or os.environ.get('BOT_OWNER')
+except AttributeError:
+    client_id = os.environ.get('CLIENT_ID')
+    client_secret = os.environ.get('CLIENT_ID')
+    password = os.environ.get('PASSWORD')
+    username = os.environ.get('USERNAME')
+    bot_owner = os.environ.get('BOT_OWNER')
 
 
 reddit = praw.Reddit(

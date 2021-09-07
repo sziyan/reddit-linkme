@@ -6,7 +6,10 @@ import api.utils
 import os
 
 ## Set config variables
-twitch_client_id = Config.twitch_client_id or os.environ.get('TWITCH_CLIENT_ID')
+try:
+    twitch_client_id = Config.twitch_client_id
+except AttributeError:
+    twitch_client_id = os.environ.get('TWITCH_CLIENT_ID')
 
 
 class Games:

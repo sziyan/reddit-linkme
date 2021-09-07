@@ -13,13 +13,43 @@ logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a', for
 logging.info("Bot started successfully")
 print('Bot started successfully')
 
+os.environ['IOS'] = ""
+os.environ['ANDROID'] = ""
+os.environ['GAMES'] = 'appstorelink_test'
+os.environ['CLIENT_ID'] = 'LqqRIAfmL06BoCLDSqGK7A'
+os.environ['CLIENT_SECRET'] = 'QpNEs-5LwPueUR4uNKkpiRV173UzLg'
+os.environ['MAX_APPS'] = '15'
+os.environ['PASSWORD'] = 'qV_cdhEwo!on8rdhKsu_Gex!'
+os.environ['USERNAME'] = 'AppStoreLink_Bot'
+os.environ['TWITCH_CLIENT_ID'] = 'g9wes47ol77svvtqvrse085m3b6tsj'
+os.environ['TWITCH_CLIENT_SECRET'] = 'sosnjso2vfn93gbuu94bpglnvc60qm'
+
 ## set config variables
-client_id = Config.client_id or os.environ.get('CLIENT_ID')
-client_secret = Config.client_secret or os.environ.get('CLIENT_ID')
-password = Config.password or os.environ.get('PASSWORD')
-username = Config.username or os.environ.get('USERNAME')
-subreddit = Config.subreddit or os.environ.get('IOS') + os.environ.get('ANDROID') + os.environ.get('GAMES')
-max_apps = Config.max_apps or os.environ.get('MAX_APPS')
+try:
+    client_id = Config.client_id
+    client_secret = Config.client_secret
+    password = Config.password
+    username = Config.username
+    max_apps = Config.max_apps
+    sreddit = ('+').join(Config.subreddit)
+except AttributeError:
+    client_id =  os.environ.get('CLIENT_ID')
+    client_secret = os.environ.get('CLIENT_SECRET')
+    password =  os.environ.get('PASSWORD')
+    username =  os.environ.get('USERNAME')
+    max_apps =  int(os.environ.get('MAX_APPS'))
+    sreddit = []
+    if os.environ.get('IOS') != '':
+        ios = ("+").join(os.environ.get('IOS').split(','))
+        sreddit.append(ios)
+    if os.environ.get('ANDROID') != '':
+        android = ("+").join(os.environ.get('ANDROID').split(','))
+        sreddit.append(android)
+    if os.environ.get('GAMES') != '':
+        games = ("+").join(os.environ.get('GAMES').split(','))
+        sreddit.append(games)
+    sreddit = ('+').join(sreddit)
+
 
 reddit = praw.Reddit(
     client_id=client_id,
@@ -55,7 +85,7 @@ def get_all_app_requests(linkme_requests):
 
 link_me_regex = re.compile("\\blink[\s]*me[\s]*:[\s]*(.*?)(?:\.|;|$)", re.M | re.I)
 
-subreddit = reddit.subreddit(("+").join(subreddit))
+subreddit = reddit.subreddit(sreddit)
 
 try:
     for comments in subreddit.stream.comments(skip_existing=True):

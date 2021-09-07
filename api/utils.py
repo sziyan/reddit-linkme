@@ -13,11 +13,31 @@ import os
 
 
 ## Set config variables
-twitch_client_id = Config.twitch_client_id or os.environ.get('TWITCH_CLIENT_ID')
-twitch_client_secret = Config.twitch_client_secret or os.environ.get('TWITCH_CLIENT_SECRET')
-android = Config.android or os.environ.get('ANDROID')
-ios = Config.ios or os.environ.get('IOS')
-games = Config.games or os.environ.get('GAMES')
+try: 
+    twitch_client_id = Config.twitch_client_id
+    twitch_client_secret = Config.twitch_client_secret
+    android =  Config.android
+    ios = Config.ios
+    games = Config.games
+except AttributeError:
+    twitch_client_id = os.environ.get('TWITCH_CLIENT_ID')
+    twitch_client_secret = os.environ.get('TWITCH_CLIENT_SECRET') 
+    print(os.environ.get('GAMES'))
+    android = os.environ.get('ANDROID')
+    if android != '':
+        android = android.split(',')
+    else:
+        android = []
+    ios = os.environ.get('IOS')
+    if ios != '':
+        ios = ios.split(',')
+    else:
+        ios = []
+    games = os.environ.get('GAMES')
+    if games != '':
+        games = games.split(',')
+    else:
+        games = []
 
 ## IGDB token handling ##
 ACCESS_TOKEN = '' #set global variable so each linkme request will only use 1 access token -> Reduces time and outgoing requests
