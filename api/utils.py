@@ -5,12 +5,15 @@ import urllib.parse
 from bs4 import BeautifulSoup
 import requests
 import jellyfish
-from config import Config
 import logging
 import json
 import time
 import os
 
+try:
+    from config import Config
+except:
+    pass
 
 ## Set config variables
 try: 

@@ -3,26 +3,21 @@ from api.GooglePlay import GooglePlay
 from api.AppStore import AppStore
 from bs4 import BeautifulSoup
 import praw
-from config import Config
 import re
 import markdown
 import logging
 import os
 
+try:
+    from config import Config
+except:
+    pass
+
 logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a', format='%(asctime)s %(levelname)s - %(message)s', datefmt='%d-%b-%y %I:%M:%S %p')
 logging.info("Bot started successfully")
 print('Bot started successfully')
 
-os.environ['IOS'] = ""
-os.environ['ANDROID'] = ""
-os.environ['GAMES'] = 'appstorelink_test'
-os.environ['CLIENT_ID'] = 'LqqRIAfmL06BoCLDSqGK7A'
-os.environ['CLIENT_SECRET'] = 'QpNEs-5LwPueUR4uNKkpiRV173UzLg'
-os.environ['MAX_APPS'] = '15'
-os.environ['PASSWORD'] = 'qV_cdhEwo!on8rdhKsu_Gex!'
-os.environ['USERNAME'] = 'AppStoreLink_Bot'
-os.environ['TWITCH_CLIENT_ID'] = 'g9wes47ol77svvtqvrse085m3b6tsj'
-os.environ['TWITCH_CLIENT_SECRET'] = 'sosnjso2vfn93gbuu94bpglnvc60qm'
+
 
 ## set config variables
 try:
