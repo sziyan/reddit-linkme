@@ -12,9 +12,7 @@ except:
 ## Set config variables
 try:
     twitch_client_id = Config.twitch_client_id
-except AttributeError:
-    twitch_client_id = os.environ.get('TWITCH_CLIENT_ID')
-except NameError:
+except:
     twitch_client_id = os.environ.get('TWITCH_CLIENT_ID')
 
 

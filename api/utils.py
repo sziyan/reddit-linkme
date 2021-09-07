@@ -22,29 +22,9 @@ try:
     android =  Config.android
     ios = Config.ios
     games = Config.games
-except AttributeError:
+except:
     twitch_client_id = os.environ.get('TWITCH_CLIENT_ID')
     twitch_client_secret = os.environ.get('TWITCH_CLIENT_SECRET') 
-    print(os.environ.get('GAMES'))
-    android = os.environ.get('ANDROID')
-    if android != '':
-        android = android.split(',')
-    else:
-        android = []
-    ios = os.environ.get('IOS')
-    if ios != '':
-        ios = ios.split(',')
-    else:
-        ios = []
-    games = os.environ.get('GAMES')
-    if games != '':
-        games = games.split(',')
-    else:
-        games = []
-except NameError:
-    twitch_client_id = os.environ.get('TWITCH_CLIENT_ID')
-    twitch_client_secret = os.environ.get('TWITCH_CLIENT_SECRET') 
-    print(os.environ.get('GAMES'))
     android = os.environ.get('ANDROID')
     if android != '':
         android = android.split(',')

@@ -17,8 +17,6 @@ logging.basicConfig(level=logging.INFO, filename='output.log', filemode='a', for
 logging.info("Bot started successfully")
 print('Bot started successfully')
 
-
-
 ## set config variables
 try:
     client_id = Config.client_id
@@ -27,24 +25,7 @@ try:
     username = Config.username
     max_apps = Config.max_apps
     sreddit = ('+').join(Config.subreddit)
-except AttributeError:
-    client_id =  os.environ.get('CLIENT_ID')
-    client_secret = os.environ.get('CLIENT_SECRET')
-    password =  os.environ.get('PASSWORD')
-    username =  os.environ.get('USERNAME')
-    max_apps =  int(os.environ.get('MAX_APPS'))
-    sreddit = []
-    if os.environ.get('IOS') != '':
-        ios = ("+").join(os.environ.get('IOS').split(','))
-        sreddit.append(ios)
-    if os.environ.get('ANDROID') != '':
-        android = ("+").join(os.environ.get('ANDROID').split(','))
-        sreddit.append(android)
-    if os.environ.get('GAMES') != '':
-        games = ("+").join(os.environ.get('GAMES').split(','))
-        sreddit.append(games)
-    sreddit = ('+').join(sreddit)
-except NameError:
+except:
     client_id =  os.environ.get('CLIENT_ID')
     client_secret = os.environ.get('CLIENT_SECRET')
     password =  os.environ.get('PASSWORD')

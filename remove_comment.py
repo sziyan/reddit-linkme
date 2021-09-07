@@ -14,19 +14,12 @@ try:
     password = Config.password or os.environ.get('PASSWORD')
     username = Config.username or os.environ.get('USERNAME')
     bot_owner = Config.bot_owner or os.environ.get('BOT_OWNER')
-except AttributeError:
+except:
     client_id = os.environ.get('CLIENT_ID')
     client_secret = os.environ.get('CLIENT_ID')
     password = os.environ.get('PASSWORD')
     username = os.environ.get('USERNAME')
     bot_owner = os.environ.get('BOT_OWNER')
-except NameError:
-    client_id = os.environ.get('CLIENT_ID')
-    client_secret = os.environ.get('CLIENT_ID')
-    password = os.environ.get('PASSWORD')
-    username = os.environ.get('USERNAME')
-    bot_owner = os.environ.get('BOT_OWNER')
-
 
 reddit = praw.Reddit(
     client_id=client_id,
