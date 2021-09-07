@@ -14,7 +14,7 @@ try:
     password = Config.password or os.environ.get('PASSWORD')
     username = Config.username or os.environ.get('USERNAME')
     bot_owner = Config.bot_owner or os.environ.get('BOT_OWNER')
-except AttributeError:
+except AttributeError or NameError:
     client_id = os.environ.get('CLIENT_ID')
     client_secret = os.environ.get('CLIENT_ID')
     password = os.environ.get('PASSWORD')

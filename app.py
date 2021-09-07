@@ -27,7 +27,7 @@ try:
     username = Config.username
     max_apps = Config.max_apps
     sreddit = ('+').join(Config.subreddit)
-except AttributeError:
+except AttributeError or NameError:
     client_id =  os.environ.get('CLIENT_ID')
     client_secret = os.environ.get('CLIENT_SECRET')
     password =  os.environ.get('PASSWORD')
